@@ -1,0 +1,33 @@
+﻿@using LanguageSchool.Models
+@{
+    ViewData["Title"] = "Matrículas";
+}
+
+<h2 class="mb-4">Lista de Matrículas</h2>
+<a href="/Enrollment/Create" class="btn btn-success">New Enrollment</a>
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Classe ID</th>
+            <th>Student ID</th>
+            <th>Enrollment Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Enrollment Enrollment in Model)
+        {
+            <tr>
+                <td>@Enrollment.Id</td>
+                <td>@Enrollment.ClassId</td>
+                <td>@Enrollment.StudentId</td>
+                <td>@Enrollment.EnrollmentDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <a href="/Enrollment/Details/@Enrollment.Id" class="btn btn-primary btn-sm">Details</a>
+                    <a href="/Enrollment/Delete/@Enrollment.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

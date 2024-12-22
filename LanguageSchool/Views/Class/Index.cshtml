@@ -1,0 +1,32 @@
+﻿@using LanguageSchool.Models;
+@{
+    ViewData["Title"] = "Classes";
+}
+
+<h2 class="mb-4">Classes Table</h2>
+<a href="/Class/Create" class="btn btn-success">Add new Class</a>
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Code</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Class Class in Model)
+        {
+            <tr>
+                <td>@Class.Id</td>
+                <td>@Class.Name</td>
+                <td>@Class.Code</td>
+                <td>
+                    <a href="/Class/Details/@Class.Id" class="btn btn-primary btn-sm">Details</a>
+                    <a href="/Class/Edit/@Class.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="/Class/Delete/@Class.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
