@@ -1,0 +1,82 @@
+@model MeuProjeto.Models.TurmaEditViewModel
+
+@{
+    ViewData["Title"] = "Editar Turma";
+}
+
+<div class="container mt-4">
+    <h2>Editar Turma</h2>
+
+    <!-- Formulário para editar os dados da turma -->
+    <form asp-action="SalvarEdicao" method="post">
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <div class="form-group">
+            <label for="Nome">Nome da Turma</label>
+            <input type="text" class="form-control" id="Nome" name="Name" value="@Model.Name" required />
+        </div>
+        <div class="form-group">
+            <label for="Codigo">Código</label>
+            <input type="text" class="form-control" id="Codigo" name="Code" value="@Model.Code" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Salvar Dados</button>
+        <a href="/Turmas" class="btn btn-secondary">Cancelar</a>
+    </form>
+
+    <hr class="my-4" />
+
+    <!-- Formulário para vincular um aluno -->
+    <h3>Vincular Aluno</h3>
+    <form asp-action="VincularAluno" method="post" class="form-inline">
+        <input type="hidden" name="TurmaId" value="@Model.Id" />
+        <div class="form-group">
+            <label for="AlunoId" class="mr-2">Selecione um Aluno:</label>
+            <select class="form-control mr-2" id="AlunoId" name="AlunoId">
+                @foreach (var aluno in Model.AlunosDisponiveis)
+                {
+                    <option value="@aluno.Id">@aluno.Nome (@aluno.Email)</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Vincular</button>
+    </form>
+
+    <hr class="my-4" />
+
+    <!-- Tabela de alunos vinculados -->
+    <h3>Alunos Vinculados</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var aluno in Model.AlunosVinculados)
+            {
+                <tr>
+                    <td>@aluno.Id</td>
+                    <td>@aluno.Nome</td>
+                    <td>@aluno.Email</td>
+                    <td>
+                        <form asp-action="RemoverVinculo" method="post" style="display: inline;">
+                            <input type="hidden" name="TurmaId" value="@Model.Id" />
+                            <input type="hidden" name="AlunoId" value="@aluno.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@*<div class="alert alert-success" role="alert">
+    A simple success alert—check it out!
+</div>
+<div class="alert alert-danger" role="alert">
+    A simple danger alert—check it out!
+</div>*@

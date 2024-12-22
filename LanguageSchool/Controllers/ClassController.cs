@@ -33,5 +33,82 @@ namespace LanguageSchool.Controllers
 
             return View();
         }
+
+        // GET: Exibir página de criação
+        public IActionResult Criar()
+        {
+            return View(new TurmaViewModel());
+        }
+
+        // POST: Salvar a nova turma
+        [HttpPost]
+        public IActionResult SalvarCriacao(TurmaViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Salvar no banco de dados (substitua pela lógica real)
+                // Exemplo: _context.Turmas.Add(new Turma { Name = model.Name, Code = model.Code });
+                // _context.SaveChanges();
+
+                return RedirectToAction("Index"); // Redireciona para a lista de turmas
+            }
+
+            return View("Criar", model); // Se houver erro, retorna à tela de criação
+        }
+
+        // GET: Exibir página de edição
+        public async Task<ActionResult> Editar(int id)
+        {
+            var turma = await _turmaService.ObterTurmaParaEdicaoAsync(id);
+            if (turma == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(turma);
+        }
+
+        // POST: Vincular Aluno
+        [HttpPost]
+        public async Task<ActionResult> VincularAluno(int TurmaId, int AlunoId)
+        {
+            var sucesso = await _turmaService.VincularAlunoAsync(TurmaId, AlunoId);
+            if (sucesso)
+            {
+                return RedirectToAction("Editar", new { id = TurmaId });
+            }
+
+            return new HttpStatusCodeResult(400, "Erro ao vincular aluno.");
+        }
+
+        // POST: Remover Vinculo
+        [HttpPost]
+        public async Task<ActionResult> RemoverVinculo(int TurmaId, int AlunoId)
+        {
+            var sucesso = await _turmaService.RemoverVinculoAsync(TurmaId, AlunoId);
+            if (sucesso)
+            {
+                return RedirectToAction("Editar", new { id = TurmaId });
+            }
+
+            return new HttpStatusCodeResult(400, "Erro ao remover vínculo.");
+        }
+
+        // POST: Salvar edição da turma
+        [HttpPost]
+        public async Task<ActionResult> SalvarEdicao(TurmaEditViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var sucesso = await _turmaService.SalvarEdicaoTurmaAsync(model);
+                if (sucesso)
+                {
+                    return RedirectToAction("Index");
+                }
+                return new HttpStatusCodeResult(400, "Erro ao salvar as edições.");
+            }
+
+            return View("Editar", model);
+        }
     }
 }
