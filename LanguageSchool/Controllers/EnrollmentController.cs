@@ -35,13 +35,13 @@ namespace LanguageSchool.Controllers
 
         public async Task<ActionResult> GetEnrollmentsByClassId(int classId)
         {
-            var enrollments = _enrollmentService.GetEnrollmentsByClassId(classId);
+            var enrollments = await _enrollmentService.GetEnrollmentsByClassId(classId);
             return View(enrollments);
         }
 
         public async Task<ActionResult> GetEnrollmentsByStudentId(int studentId)
         {
-            var enrollments = _enrollmentService.GetEnrollmentsByStudentId(studentId);
+            var enrollments = await _enrollmentService.GetEnrollmentsByStudentId(studentId);
             return View(enrollments);
         }
 

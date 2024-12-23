@@ -72,7 +72,6 @@ namespace LanguageSchool.API.Controllers
             return StatusCode(HttpStatusCode.NoContent); 
         }
 
-        // DELETE: api/Enrollment/5
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
