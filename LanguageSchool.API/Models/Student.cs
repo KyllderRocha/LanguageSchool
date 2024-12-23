@@ -9,6 +9,18 @@ namespace LanguageSchool.API.Models
 {
     public class Student
     {
+
+        public Student()
+        {
+        }
+
+        public Student(StudentForm student)
+        {
+            Name = student.Name;
+            CPF = student.CPF;
+            DateOfBirth = student.DateOfBirth;
+        }
+
         [Key]
         public int Id { get; set; }
 

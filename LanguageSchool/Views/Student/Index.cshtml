@@ -1,12 +1,25 @@
 ﻿@using LanguageSchool.Models;
 @{
     ViewData["Title"] = "Students";
+    var SuccessHidden = ViewBag.CreateSuccess == true ? "" : "d-none";
+    var DeleteHidden = ViewBag.DeleteSuccess == true ? "" : "d-none";
+
+    ViewBag.CreateSuccess = null;
+    ViewBag.DeleteSuccess = null;
 }
 
-<h2 class="mb-4">
-    Students Table
-</h2>
-<a href="/Student/Criar" class="btn btn-success">Adicionar Novo Aluno</a>
+<div class="w-100 d-flex flex-row align-items-lg-start justify-content-between">
+    <h2 class="mb-4">Students Table</h2>
+    <a href="/Student/Create" class="btn btn-success">Add new Student</a>
+</div>
+
+<div class="alert alert-success @SuccessHidden" role="alert">
+    Success to create the new Student!
+</div>
+<div class="alert alert-info @DeleteHidden" role="alert">
+    Success to Delete the Student!
+</div>
+
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
         <tr>
@@ -22,32 +35,41 @@
             <tr>
                 <td>@student.Id</td>
                 <td>@student.Name</td>
-                <td>@student.CPF</td>
+                <td>@string.Format("{0:000\\.000\\.000\\-00}", long.Parse(student.CPF))</td>
                 <td>
-                    <a href="/Student/Details/@student.Id" class="btn btn-primary btn-sm">Details</a>
-                    <a href="/Student/Edit/@student.Id" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="/Student/Delete/@student.Id" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</a>
+                    <a href="/Student/Edit/@student.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="openDeleteModal(@student.Id)">Delete</a>
                 </td>
             </tr>
         }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-<!-- Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Do you want delete this Student?</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                This action cannot be reverted.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Delete</button>
+    <!-- Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Do you want delete this Student?</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    This action cannot be reverted.
+                </div>
+                @using (Html.BeginForm("Delete", "Student", FormMethod.Post))
+                {
+                    <div class="modal-footer">
+                        <input type="hidden" id="studentIdToDelete" name="id" value="" />
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    </div>
+                }
             </div>
         </div>
     </div>
-</div>
+
+    <script>
+        function openDeleteModal(classId) {
+            $("#studentIdToDelete").val(classId)
+        }
+    </script>

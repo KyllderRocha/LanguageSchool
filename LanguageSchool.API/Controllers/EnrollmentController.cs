@@ -11,45 +11,44 @@ using System.Web.Http;
 
 namespace LanguageSchool.API.Controllers
 {
+    [RoutePrefix("api/Enrollment")]
     public class EnrollmentController : ApiController
     {
         private readonly UnitOfWork _unitOfWork;
 
-        // Constructor with Dependency Injection
         public EnrollmentController(UnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        // GET: api/Enrollment
         [HttpGet]
         public IEnumerable<Enrollment> GetAll()
         {
             return _unitOfWork.Enrollments.GetAll();
         }
 
-        // GET: api/Enrollment/5
         [HttpGet]
         public IHttpActionResult GetById(int id)
         {
             var Enrollment = _unitOfWork.Enrollments.GetById(id);
             if (Enrollment == null)
-                return NotFound(); // Returns 404 status
+                return NotFound(); 
 
-            return Ok(Enrollment); // Returns 200 status with the Enrollment data
+            return Ok(Enrollment);
         }
 
-        // POST: api/Enrollment
         [HttpPost]
         public IHttpActionResult Create([FromBody] Enrollment Enrollment)
         {
+            Enrollment.EnrollmentDate = DateTime.Now;
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Returns 400 status with validation errors
+                return BadRequest(ModelState); 
 
             _unitOfWork.Enrollments.Add(Enrollment);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return CreatedAtRoute("DefaultApi", new { id = Enrollment.Id }, Enrollment); // Returns 201 status
+            return CreatedAtRoute("DefaultApi", new { id = Enrollment.Id }, Enrollment); 
         }
 
         // PUT: api/Enrollment/5
@@ -67,9 +66,10 @@ namespace LanguageSchool.API.Controllers
             existingEnrollment.ClassId = Enrollment.ClassId;
 
             _unitOfWork.Enrollments.Update(existingEnrollment);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return StatusCode(HttpStatusCode.NoContent); // Returns 204 status
+            return StatusCode(HttpStatusCode.NoContent); 
         }
 
         // DELETE: api/Enrollment/5
@@ -81,9 +81,42 @@ namespace LanguageSchool.API.Controllers
                 return NotFound();
 
             _unitOfWork.Enrollments.Delete(Enrollment);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return Ok(Enrollment); // Returns 200 status with the deleted Enrollment
+            return Ok(Enrollment); 
         }
+
+        [HttpGet]
+        [Route("GetByStudentId/{studentId}")]
+        public IEnumerable<Enrollment> GetByStudentId(int studentId)
+        {
+            return _unitOfWork.Enrollments.GetAll().Where(e => e.StudentId == studentId);
+        }
+        
+        [HttpGet]
+        [Route("GetByClassId/{classId}")]
+        public IEnumerable<Enrollment> GetByClassId(int classId)
+        {
+            return _unitOfWork.Enrollments.GetAll().Where(e => e.ClassId == classId);
+        }
+
+        [HttpGet]
+        [Route("GetStudentsNotInClass/{classId}")]
+        public IEnumerable<Student> GetStudentsNotInClass(int classId)
+        {
+            var studentsInClass = _unitOfWork.Enrollments.GetAll().Where(e => e.ClassId == classId).Select(e => e.StudentId);
+
+            return _unitOfWork.Students.GetAll().Where(s => !studentsInClass.Contains(s.Id));
+        }
+
+        [HttpGet]
+        [Route("GetClassesNotForStudent/{studentId}")]
+        public IEnumerable<Class> GetClassesNotForStudent(int studentId)
+        {
+            var classesForStudent = _unitOfWork.Enrollments.GetAll().Where(e => e.StudentId == studentId).Select(e => e.ClassId);
+            return _unitOfWork.Classes.GetAll().Where(c => !classesForStudent.Contains(c.Id) && c.Enrollments.Count < 5);
+        }
+
     }
 }

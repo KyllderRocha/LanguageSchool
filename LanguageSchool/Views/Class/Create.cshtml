@@ -1,23 +1,32 @@
 @model LanguageSchool.Models.Class
 
 @{
-    ViewData["Title"]="Criar Nova Turma";
+    ViewData["Title"]= "Create New Class";
+
+    var AlertHidden = ViewBag.CreateSuccess == false ? "" : "d-none";
 }
 
-<div class="container mt-4">   
-    <h2> Criar Nova Turma</h2>
-    <form asp-action="SalvarCriacao" method="post">
-        <!--Campos da Turma -->
+<div class="container mt-4">
+    <h2> Create New Class</h2>
+
+    <div class="alert alert-danger @AlertHidden" role="alert">
+        Error creating class, please try again at a later time
+    </div>
+    @using (Html.BeginForm("SaveCreate", "Class", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
         <div class="form-group">
-            <label for="Nome"> Nome da Turma </label>
-            <input type="text" class="form-control" id="Nome" name="Name" placeholder="Digite o nome da turma" required />
+            <label for="Name"> Class Name: </label>
+            <input type="text" class="form-control" id="Name" name="Name" placeholder="Enter the class name" required value="@Model.Name" />
         </div>
-        <div class="form-group">
-            <label for="Codigo"> Código </label>
-            <input type="text" class="form-control" id="Codigo" name="Code" placeholder="Digite o código da turma" required />
+        <div class="form-group mt-2">
+            <label for="Code"> Code </label>
+            <input type="text" class="form-control" id="Code" name="Code" placeholder="Enter the class code" required value="@Model.Code" />
         </div>
 
-        <button type="submit" class="btn btn-success"> Salvar </button>
-        <a href="/Turmas" class="btn btn-secondary"> Cancelar </a>
-    </form>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="/Class" class="btn btn-secondary">Cancel</a>
+        </div>
+    }
 </div>

@@ -12,7 +12,7 @@ namespace LanguageSchool.API.Data
 
     public class AppDbContext : DbContext
     {
-        public AppDbContext() : base("DefaultConnection") // Nome da connection string
+        public AppDbContext() : base("DefaultConnection") 
         {
         }
 
@@ -22,7 +22,6 @@ namespace LanguageSchool.API.Data
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            // Configuração para a tabela Registration
             modelBuilder.Entity<Enrollment>()
                 .HasKey(m => m.Id);
 

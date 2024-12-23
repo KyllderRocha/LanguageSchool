@@ -11,52 +11,56 @@ using System.Web.Http;
 
 namespace LanguageSchool.API.Controllers
 {
+    [RoutePrefix("api/Class")]
     public class ClassController : ApiController
     {
         private readonly UnitOfWork _unitOfWork;
 
-        // Constructor with Dependency Injection
         public ClassController(UnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        // GET: api/Class
         [HttpGet]
         public IEnumerable<Class> GetAll()
         {
             return _unitOfWork.Classes.GetAll();
         }
 
-        // GET: api/Class/5
+        [HttpGet]
+        [Route("Available")]
+        public IEnumerable<Class> GetAvailableClasses()
+        {
+            return _unitOfWork.Classes.GetAll().Where(c => c.Enrollments.Count < 5);
+        }
+
         [HttpGet]
         public IHttpActionResult GetById(int id)
         {
             var Class = _unitOfWork.Classes.GetById(id);
             if (Class == null)
-                return NotFound(); // Returns 404 status
+                return NotFound(); 
 
-            return Ok(Class); // Returns 200 status with the Class data
+            return Ok(Class); 
         }
 
-        // POST: api/Class
         [HttpPost]
         public IHttpActionResult Create([FromBody] Class Class)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Returns 400 status with validation errors
+                return BadRequest(ModelState);
 
             var exists = _unitOfWork.Classes.GetAll().Any(s => s.Code == Class.Code);
             if (exists)
                 return BadRequest("A Class with this Code already exists.");
 
             _unitOfWork.Classes.Add(Class);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return CreatedAtRoute("DefaultApi", new { id = Class.Id }, Class); // Returns 201 status
+            return CreatedAtRoute("DefaultApi", new { id = Class.Id }, Class); 
         }
 
-        // PUT: api/Class/5
         [HttpPut]
         public IHttpActionResult Update(int id, [FromBody] Class Class)
         {
@@ -71,12 +75,12 @@ namespace LanguageSchool.API.Controllers
             existingClass.Code = Class.Code;
 
             _unitOfWork.Classes.Update(existingClass);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return StatusCode(HttpStatusCode.NoContent); // Returns 204 status
+            return StatusCode(HttpStatusCode.NoContent); 
         }
 
-        // DELETE: api/Class/5
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
@@ -85,9 +89,10 @@ namespace LanguageSchool.API.Controllers
                 return NotFound();
 
             _unitOfWork.Classes.Delete(Class);
-            _unitOfWork.Save();
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
 
-            return Ok(Class); // Returns 200 status with the deleted Class
+            return Ok(Class); 
         }
     }
 }

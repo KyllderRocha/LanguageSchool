@@ -1,7 +1,9 @@
 ﻿using LanguageSchool.Models;
+using LanguageSchool.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -9,29 +11,46 @@ namespace LanguageSchool.Controllers
 {
     public class EnrollmentController : Controller
     {
-        public ActionResult Index()
+        private readonly EnrollmentService _enrollmentService;
+
+        public EnrollmentController()
         {
-            var Enrollments = new List<Enrollment>
+            _enrollmentService = new EnrollmentService();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Create(Enrollment enrollment, string returnUrl)
+        {
+            if (ModelState.IsValid)
             {
-                new Enrollment { Id = 1, ClassId = 1, StudentId = 1, EnrollmentDate = DateTime.UtcNow },
-                new Enrollment { Id = 2, ClassId = 1, StudentId = 2, EnrollmentDate = DateTime.UtcNow },
-                new Enrollment { Id = 3, ClassId = 2, StudentId = 2, EnrollmentDate = DateTime.UtcNow }
-            };
-            return View(Enrollments);
+                var success = await _enrollmentService.AddEnrollment(enrollment);
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
+                return RedirectToAction("Index");
+            }
+            return View(enrollment);
         }
 
-        public ActionResult About()
+        public async Task<ActionResult> GetEnrollmentsByClassId(int classId)
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
+            var enrollments = _enrollmentService.GetEnrollmentsByClassId(classId);
+            return View(enrollments);
         }
 
-        public ActionResult Contact()
+        public async Task<ActionResult> GetEnrollmentsByStudentId(int studentId)
         {
-            ViewBag.Message = "Your contact page.";
+            var enrollments = _enrollmentService.GetEnrollmentsByStudentId(studentId);
+            return View(enrollments);
+        }
 
-            return View();
+        [HttpPost]
+        public async Task<ActionResult> DeleteEnrollment(int id, string returnUrl)
+        {
+            var success = await _enrollmentService.DeleteEnrollment(id);
+            TempData["DeleteEnrollmentSuccess"] = success;
+            return Redirect(returnUrl);
         }
     }
 }

@@ -23,6 +23,20 @@ namespace LanguageSchool.API.Repositories
             Enrollments = new GenericRepository<Enrollment>(_context);
         }
 
+        public bool SaveChanges()
+        {
+            try
+            {
+                Save();
+                return true;
+            }
+            catch (Exception)
+            {
+                Dispose();
+            }
+            return false;
+        }
+
         public void Save()
         {
             _context.SaveChanges();

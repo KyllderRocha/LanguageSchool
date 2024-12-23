@@ -1,82 +1,100 @@
-@model MeuProjeto.Models.TurmaEditViewModel
+@using LanguageSchool.Models
+@model Class
+
 
 @{
-    ViewData["Title"] = "Editar Turma";
+    ViewData["Title"] = "Class Edit";
+    var EditSuccessHidden = ViewBag.EditSuccess == true ? "" : "d-none";
+    var EditErrorHidden = ViewBag.EditSuccess == false ? "" : "d-none";
+    var FullHidden = ViewBag.EnrollmentsStudents.Count >= 5 ? "" : "d-none";
+    ViewBag.EditSuccess = null;
+
+    var AbleToEnroll = ViewBag.EnrollmentsStudents.Count < 5 ? "" : "disabled";
 }
 
 <div class="container mt-4">
-    <h2>Editar Turma</h2>
+    <h2>Class Edit</h2>
+    <div class="alert alert-success @EditSuccessHidden" role="alert">
+        Success to create the new Class!
+    </div>
+    <div class="alert alert-warning @EditErrorHidden" role="alert">
+        Error to update the class, please try again at a later time
+    </div>
+    <div class="alert alert-warning @FullHidden" role="alert">
+        This Class is already full! 
+    </div>
 
-    <!-- Formulário para editar os dados da turma -->
-    <form asp-action="SalvarEdicao" method="post">
+    @using (Html.BeginForm("SaveEdit", "Class", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
         <input type="hidden" name="Id" value="@Model.Id" />
         <div class="form-group">
-            <label for="Nome">Nome da Turma</label>
-            <input type="text" class="form-control" id="Nome" name="Name" value="@Model.Name" required />
+            <label for="Name"> Class Name: </label>
+            <input type="text" class="form-control" id="Name" name="Name" placeholder="Enter the class name" required value="@Model.Name" />
         </div>
-        <div class="form-group">
-            <label for="Codigo">Código</label>
-            <input type="text" class="form-control" id="Codigo" name="Code" value="@Model.Code" required />
+        <div class="form-group mt-2">
+            <label for="Code"> Code </label>
+            <input type="text" class="form-control" id="Code" name="Code" placeholder="Enter the class code" required value="@Model.Code" />
         </div>
 
-        <button type="submit" class="btn btn-success">Salvar Dados</button>
-        <a href="/Turmas" class="btn btn-secondary">Cancelar</a>
-    </form>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="/Class" class="btn btn-secondary">Cancel</a>
+        </div>
+    }
 
     <hr class="my-4" />
 
     <!-- Formulário para vincular um aluno -->
-    <h3>Vincular Aluno</h3>
-    <form asp-action="VincularAluno" method="post" class="form-inline">
-        <input type="hidden" name="TurmaId" value="@Model.Id" />
-        <div class="form-group">
-            <label for="AlunoId" class="mr-2">Selecione um Aluno:</label>
-            <select class="form-control mr-2" id="AlunoId" name="AlunoId">
-                @foreach (var aluno in Model.AlunosDisponiveis)
-                {
-                    <option value="@aluno.Id">@aluno.Nome (@aluno.Email)</option>
-                }
-            </select>
+    <h3>Enrollment Student</h3>
+
+    @using (Html.BeginForm("Create", "Enrollment", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="/Class/Edit/@Model.Id" required />
+        <input type="hidden" name="ClassId" value="@Model.Id" required />
+        <div class="w-auto d-flex align-items-lg-end">
+            <div class="form-group">
+                <label for="StudentId" class="mr-2">Student Select:</label>
+                <select class="form-control mr-2 @AbleToEnroll" id="StudentId" name="StudentId" required>
+                    <option value="">Select an option</option>
+                    @foreach (Student aluno in ViewBag.AvailableStudents)
+                    {
+                        <option value="@aluno.Id">@aluno.Name (@string.Format("{0:000\\.000\\.000\\-00}", long.Parse(aluno.CPF)))</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary ms-3 @AbleToEnroll">Add</button>
         </div>
-        <button type="submit" class="btn btn-primary">Vincular</button>
-    </form>
+    }
 
     <hr class="my-4" />
 
-    <!-- Tabela de alunos vinculados -->
-    <h3>Alunos Vinculados</h3>
+    <h3>Enrollment Table</h3>
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Ações</th>
+                <th>Name</th>
+                <th>CPF</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var aluno in Model.AlunosVinculados)
+            @foreach (Enrollment enrollment in ViewBag.EnrollmentsStudents)
             {
                 <tr>
-                    <td>@aluno.Id</td>
-                    <td>@aluno.Nome</td>
-                    <td>@aluno.Email</td>
+                    <td>@enrollment.Student.Name</td>
+                    <td>@string.Format("{0:000\\.000\\.000\\-00}", long.Parse(enrollment.Student.CPF))</td>
                     <td>
-                        <form asp-action="RemoverVinculo" method="post" style="display: inline;">
-                            <input type="hidden" name="TurmaId" value="@Model.Id" />
-                            <input type="hidden" name="AlunoId" value="@aluno.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
-                        </form>
+                        @using (Html.BeginForm("DeleteEnrollment", "Enrollment", FormMethod.Post))
+                        {
+                            <input type="hidden" name="Id" value="@enrollment.Id" />
+                            <input type="hidden" name="returnUrl" value="/Class/Edit/@Model.Id" required />
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
-
-@*<div class="alert alert-success" role="alert">
-    A simple success alert—check it out!
-</div>
-<div class="alert alert-danger" role="alert">
-    A simple danger alert—check it out!
-</div>*@

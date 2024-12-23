@@ -15,52 +15,49 @@ namespace LanguageSchool.API.Controllers
     {
         private readonly UnitOfWork _unitOfWork;
 
-        // Constructor with Dependency Injection
         public StudentController(UnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        // GET: api/Student
         [HttpGet]
         public IEnumerable<Student> GetAll()
         {
             return _unitOfWork.Students.GetAll();
         }
 
-        // GET: api/Student/5
         [HttpGet]
         public IHttpActionResult GetById(int id)
         {
             var student = _unitOfWork.Students.GetById(id);
             if (student == null)
-                return NotFound(); // Returns 404 status
+                return NotFound();
 
-            return Ok(student); // Returns 200 status with the student data
+            return Ok(student); 
         }
 
-        // POST: api/Student
         [HttpPost]
-        public IHttpActionResult Create([FromBody] Student student, [FromBody] Class Class)
+        public IHttpActionResult Create([FromBody] StudentForm student)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Returns 400 status with validation errors
+                return BadRequest(ModelState);
 
             var exists = _unitOfWork.Students.GetAll().Any(s => s.CPF == student.CPF);
             if (exists)
                 return BadRequest("A student with this CPF already exists.");
 
-            if (Class.Id == 0)
+            if (student.ClassId == 0)
                 return BadRequest("The student needs a first class to be created.");
 
-            _unitOfWork.Students.Add(student);
-            _unitOfWork.Enrollments.Add(new Enrollment { StudentId = student.Id, ClassId = Class.Id, EnrollmentDate = new DateTime() });
-            _unitOfWork.Save();
+            _unitOfWork.Students.Add(new Student(student));
+            _unitOfWork.Enrollments.Add(new Enrollment { StudentId = student.Id, ClassId = student.ClassId, EnrollmentDate = DateTime.Now });
 
-            return CreatedAtRoute("DefaultApi", new { id = student.Id }, student); // Returns 201 status
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
+
+            return CreatedAtRoute("DefaultApi", new { id = student.Id }, student); 
         }
 
-        // PUT: api/Student/5
         [HttpPut]
         public IHttpActionResult Update(int id, [FromBody] Student student)
         {
@@ -76,12 +73,13 @@ namespace LanguageSchool.API.Controllers
             existingStudent.DateOfBirth = student.DateOfBirth;
 
             _unitOfWork.Students.Update(existingStudent);
-            _unitOfWork.Save();
 
-            return StatusCode(HttpStatusCode.NoContent); // Returns 204 status
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
+
+            return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // DELETE: api/Student/5
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
@@ -90,9 +88,11 @@ namespace LanguageSchool.API.Controllers
                 return NotFound();
 
             _unitOfWork.Students.Delete(student);
-            _unitOfWork.Save();
 
-            return Ok(student); // Returns 200 status with the deleted student
+            if (!_unitOfWork.SaveChanges())
+                return BadRequest("Error to Save.");
+
+            return Ok(student);
         }
     }
 }
